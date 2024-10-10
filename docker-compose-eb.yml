@@ -1,7 +1,6 @@
-version: "3"
 services:
   server:
-    image: SEU_REPOSITORIO/bia:${TAG}
+    image: 471112700544.dkr.ecr.us-east-1.amazonaws.com/bia:${TAG}
     ports:
       - 80:8080
     environment:

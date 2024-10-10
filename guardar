@@ -1,0 +1,35 @@
+REGION="us-east-1"
+PROFILE="bia"
+REPO_URL="471112700544.dkr.ecr.${REGION}.amazonaws.com/bia"
+versao=$(git rev-parse HEAD | cut -c 1-7 || echo "latest")
+
+# Autenticarse en ECR
+echo "Autenticando en Amazon ECR..."
+if aws ecr get-login-password --region $REGION --profile $PROFILE | docker login --username AWS --password-stdin $REPO_URL; then
+    echo "Autenticación exitosa."
+else
+    echo "Error de autenticación. Verifica tus credenciales y configuración."
+    exit 1
+fi
+
+# Construir la imagen Docker
+echo "Construyendo la imagen Docker..."
+if docker build -t bia .; then
+    echo "Construcción completada."
+else
+    echo "Error al construir la imagen Docker."
+    exit 1
+fi
+
+# Etiquetar la imagen con el hash de la versión
+echo "Etiquetando la imagen con el tag: $versao"
+docker tag bia:latest $REPO_URL:$versao
+
+# Subir la imagen a ECR
+echo "Subiendo la imagen a ECR..."
+if docker push $REPO_URL:$versao; then
+    echo "Imagen subida exitosamente a $REPO_URL:$versao."
+else
+    echo "Error al subir la imagen a ECR."
+    exit 1
+fi
